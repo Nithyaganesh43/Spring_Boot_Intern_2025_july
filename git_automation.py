@@ -74,9 +74,16 @@ def git_automation(commit_message):
     if not run_command(f'git commit -m "{commit_message}"', "Committing changes"):
         return False
     
-    # Step 4: Push to origin main
-    if not run_command("git push origin main", "Pushing to origin main"):
-        return False
+    # Step 4: Get current branch name and push
+    try:
+        branch_result = subprocess.run("git branch --show-current", shell=True, check=True, capture_output=True, text=True)
+        current_branch = branch_result.stdout.strip()
+        if not run_command(f"git push origin {current_branch}", f"Pushing to origin {current_branch}"):
+            return False
+    except subprocess.CalledProcessError:
+        # Fallback to master if branch detection fails
+        if not run_command("git push origin master", "Pushing to origin master"):
+            return False
     
     print("-" * 50)
     print("🎉 Git automation completed successfully!")
